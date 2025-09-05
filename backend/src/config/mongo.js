@@ -10,7 +10,7 @@ const connectMongo = async () => {
       logger.info("MONGO_ALREADY_CONNECTED");
       return;
     }
-
+    logger.info("Connecting to MongoDB...");
     await mongoose.connect(MONGO_URI); 
     logger.info(`MONGO_CONNECTED: ${mongoose.connection.host}`);
   } catch (err) {
