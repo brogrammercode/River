@@ -1,0 +1,38 @@
+final seedUsers = [
+  {
+    "_id": "64f0b9a1234567890abcd111",
+    "name": "Harsh Sharma",
+    "email": "harsh@example.com",
+    "password": "hashed_password_123",
+    "role": "End User",
+    "createdAt": "2025-08-30T10:15:30.000Z",
+    "updatedAt": "2025-08-31T14:45:00.000Z",
+  },
+  {
+    "_id": "64f0b9a1234567890abcd222",
+    "name": "Ayesha Khan",
+    "email": "ayesha@example.com",
+    "password": "hashed_password_456",
+    "role": "Receiver",
+    "createdAt": "2025-08-28T08:20:10.000Z",
+    "updatedAt": "2025-08-30T13:40:20.000Z",
+  },
+  {
+    "_id": "64f0b9a1234567890abcd333",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "hashed_password_789",
+    "role": "Receiver",
+    "createdAt": "2025-08-27T09:10:00.000Z",
+    "updatedAt": "2025-08-29T18:20:00.000Z",
+  },
+  {
+    "_id": "64f0b9a1234567890abcd444",
+    "name": "Priya Verma",
+    "email": "priya@example.com",
+    "password": "hashed_password_999",
+    "role": "End User",
+    "createdAt": "2025-08-25T11:30:00.000Z",
+    "updatedAt": "2025-08-26T12:45:00.000Z",
+  },
+];
