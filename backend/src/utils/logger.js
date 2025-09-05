@@ -6,9 +6,11 @@ import winston from "winston";
 const { NODE_ENV, LOG_FILE, LOG_LEVEL, ERROR_LOG_FILE } = env;
 
 // to make the log files if not exists
-const logDir = path.dirname(LOG_FILE);
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true });
+if (NODE_ENV === "development") {
+  const logDir = path.dirname(LOG_FILE);
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
 }
 
 // custom format for logs
