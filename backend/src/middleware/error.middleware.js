@@ -33,7 +33,7 @@ export const errorHandler = (err, req, res, next) => {
   res.status(error.statusCode || 500).json(
     new ApiResponse(false, error.message || "Server Error", null, {
       ...(error.errors && { errors: error.errors }),
-      ...(NODE_ENV === development && { stack: err.stack }),
+      ...(NODE_ENV === "development" && { stack: err.stack }),
     })
   );
 };

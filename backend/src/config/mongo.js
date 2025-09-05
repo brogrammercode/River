@@ -4,12 +4,22 @@ import env from "./env.js";
 
 const { MONGO_URI } = env;
 
+let isConnected = null;
+
 export const connectMongo = async () => {
+  if (isConnected) {
+    return;
+  }
+
   try {
-    const conn = await mongoose.connect(MONGO_URI);
-    logger.info(`CONGO_MONGO: ${conn.connection.host}`);
+    const conn = await mongoose.connect(MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    isConnected = conn.connections[0].readyState;
+    logger.info(`MONGO_CONNECTED: ${conn.connection.host}`);
   } catch (error) {
-    logger.error("ERROR_CONNECTING_CONGO", error);
-    process.exit(1);
+    logger.error("ERROR_CONNECTING_MONGO", error);
+    throw error;
   }
 };
