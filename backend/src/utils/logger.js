@@ -5,60 +5,51 @@ import winston from "winston";
 
 const { NODE_ENV, LOG_FILE, LOG_LEVEL, ERROR_LOG_FILE } = env;
 
-// to make the log files if not exists
-if (NODE_ENV === "development") {
-  const logDir = path.dirname(LOG_FILE);
-  if (!fs.existsSync(logDir)) {
-    fs.mkdirSync(logDir, { recursive: true });
-  }
-}
-
-// custom format for logs
 const logFormat = winston.format.combine(
   winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
   winston.format.errors({ stack: true }),
   winston.format.json()
 );
 
-// console format for dev
 const consoleFormat = winston.format.combine(
   winston.format.colorize(),
   winston.format.timestamp({ format: "DD HH:mm:ss" }),
   winston.format.printf(({ timestamp, level, message, ...meta }) => {
     let msg = `${timestamp} [${level}]: ${message}`;
     if (Object.keys(meta).length > 0) {
-      msg += `${JSON.stringify(meta)}`;
+      msg += ` ${JSON.stringify(meta)}`;
     }
     return msg;
   })
 );
 
-// transports
 const transports = [];
+
 if (NODE_ENV === "development") {
+  const logDir = path.dirname(LOG_FILE);
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+
   transports.push(
-    new winston.transports.Console({
-      format: consoleFormat,
+    new winston.transports.Console({ format: consoleFormat }),
+    new winston.transports.File({
+      filename: ERROR_LOG_FILE,
+      level: "error",
+      format: logFormat,
+      maxsize: 5242880,
+      maxFiles: 5,
+    }),
+    new winston.transports.File({
+      filename: LOG_FILE,
+      format: logFormat,
+      maxsize: 5242880,
+      maxFiles: 5,
     })
   );
+} else {
+  transports.push(new winston.transports.Console({ format: logFormat }));
 }
-
-// file logging
-transports.push(
-  new winston.transports.File({
-    filename: ERROR_LOG_FILE,
-    level: "error",
-    format: logFormat,
-    maxsize: 5242880,
-    maxFiles: 5,
-  }),
-  new winston.transports.File({
-    filename: LOG_FILE,
-    format: logFormat,
-    maxsize: 5242880,
-    maxFiles: 5,
-  })
-);
 
 const logger = winston.createLogger({
   level: LOG_LEVEL,
