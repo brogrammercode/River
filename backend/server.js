@@ -1,5 +1,5 @@
 import app from "./src/app.js";
-import { connectMongo } from "./src/config/mongo.js";
+import connectMongo from "./src/config/mongo.js";
 
-connectMongo();
+await connectMongo();
 export default app;

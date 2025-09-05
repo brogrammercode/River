@@ -1,25 +1,26 @@
 import mongoose from "mongoose";
-import logger from "../utils/logger.js";
 import env from "./env.js";
 
 const { MONGO_URI } = env;
 
-let isConnected = null;
-
-export const connectMongo = async () => {
-  if (isConnected) {
-    return;
-  }
-
+const connectMongo = async () => {
   try {
-    const conn = await mongoose.connect(MONGO_URI, {
+    if (mongoose.connection.readyState === 1) {
+      console.log("MONGO_ALREADY_CONNECTED");
+      return;
+    }
+
+    await mongoose.connect(MONGO_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 10000,
     });
-    isConnected = conn.connections[0].readyState;
-    logger.info(`MONGO_CONNECTED: ${conn.connection.host}`);
-  } catch (error) {
-    logger.error("ERROR_CONNECTING_MONGO", error);
-    throw error;
+
+    console.log("MONGO_CONNECTED:", mongoose.connection.host);
+  } catch (err) {
+    console.error("MONGO_ERROR:", err.message);
+    throw err;
   }
 };
+
+export default connectMongo;
