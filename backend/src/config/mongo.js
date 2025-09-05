@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import logger from "../utils/logger.js";
 import env from "./env.js";
 
 const { MONGO_URI } = env;
@@ -6,7 +7,7 @@ const { MONGO_URI } = env;
 const connectMongo = async () => {
   try {
     if (mongoose.connection.readyState === 1) {
-      console.log("MONGO_ALREADY_CONNECTED");
+      logger.info("MONGO_ALREADY_CONNECTED");
       return;
     }
 
@@ -16,9 +17,9 @@ const connectMongo = async () => {
       serverSelectionTimeoutMS: 10000,
     });
 
-    console.log("MONGO_CONNECTED:", mongoose.connection.host);
+    logger.info(`MONGO_CONNECTED: ${mongoose.connection.host}`);
   } catch (err) {
-    console.error("MONGO_ERROR:", err.message);
+    logger.error("MONGO_ERROR:", err.message);
     throw err;
   }
 };
