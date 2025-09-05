@@ -8,11 +8,11 @@ const { NODE_ENV, PORT } = env;
 const startServer = async () => {
   try {
     await connectMongo();
-    if (NODE_ENV === "development") {
-      app.listen(PORT, () => {
-        logger.info(`PORT_CONNECTED: ${PORT}`);
-      });
-    }
+    // if (NODE_ENV === "development") {
+    app.listen(PORT, () => {
+      logger.info(`PORT_CONNECTED: ${PORT}`);
+    });
+    // }
   } catch (err) {
     logger.error("Failed to start server:", err);
     process.exit(1);
