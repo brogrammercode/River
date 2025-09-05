@@ -7,7 +7,7 @@ import { errorHandler } from "./middleware/error.middleware.js";
 const app = express();
 app.use(
   cors({
-    origin: "https://river-ruddy.vercel.app",
+    origin: "https://river-production.up.railway.app",
     credentials: true,
   })
 );

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:forui/forui.dart';
+import 'package:frontend/core/di/container.dart';
 import 'package:frontend/core/config/routes/app_routes.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  Injections.init();
   runApp(const Application());
 }
 
@@ -15,26 +19,28 @@ class Application extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = FThemes.zinc.dark;
 
-    return ScreenUtilInit(
-      designSize: const Size(411.42857142857144, 843.4285714285714),
-      minTextAdapt: true,
-      splitScreenMode: true,
-      builder: (context, child) {
-        return MaterialApp(
-          supportedLocales: FLocalizations.supportedLocales,
-          debugShowCheckedModeBanner: false,
-          localizationsDelegates: const [
-            ...FLocalizations.localizationsDelegates,
-          ],
-          builder: (_, child) => FTheme(data: theme, child: child!),
-          theme: theme.toApproximateMaterialTheme().copyWith(
-            appBarTheme: AppBarTheme(
-              systemOverlayStyle: commonSystemOverlay(context),
+    return ProviderScope(
+      child: ScreenUtilInit(
+        designSize: const Size(411.42857142857144, 843.4285714285714),
+        minTextAdapt: true,
+        splitScreenMode: true,
+        builder: (context, child) {
+          return MaterialApp(
+            supportedLocales: FLocalizations.supportedLocales,
+            debugShowCheckedModeBanner: false,
+            localizationsDelegates: const [
+              ...FLocalizations.localizationsDelegates,
+            ],
+            builder: (_, child) => FTheme(data: theme, child: child!),
+            theme: theme.toApproximateMaterialTheme().copyWith(
+              appBarTheme: AppBarTheme(
+                systemOverlayStyle: commonSystemOverlay(context),
+              ),
             ),
-          ),
-          onGenerateRoute: AppRoutes.generateRoute,
-        );
-      },
+            onGenerateRoute: AppRoutes.generateRoute,
+          );
+        },
+      ),
     );
   }
 }

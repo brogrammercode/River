@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:frontend/core/config/dio/api_response.dart';
-import 'package:frontend/core/config/dio/dio_client.dart';
+import 'package:frontend/core/dio/api_response.dart';
+import 'package:frontend/core/dio/dio_client.dart';
 import 'package:frontend/core/error/exception.dart';
 import 'package:frontend/features/auth/data/models/user_model.dart';
 import 'package:frontend/features/auth/domain/repo/auth_repo.dart';
@@ -59,7 +59,6 @@ class AuthDataSource implements AuthRepo {
       final apiResponse = ApiResponse.fromJson(
         response.data,
         fromJsonT: (json) {
-          // Handle nested data structure
           final data = json as Map<String, dynamic>;
           return UserModel.fromJson(data['user'] as Map<String, dynamic>);
         },

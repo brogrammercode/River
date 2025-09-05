@@ -14,7 +14,7 @@ class AppRoutes {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case core:
-        return MaterialPageRoute(builder: (_) => const ItemsPage());
+        return MaterialPageRoute(builder: (_) => const LoginPage());
       case register:
         return MaterialPageRoute(builder: (_) => const RegisterPage());
       case login:

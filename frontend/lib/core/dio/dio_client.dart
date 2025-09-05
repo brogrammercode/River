@@ -6,7 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class DioClient {
   late final Dio _dio;
   final FlutterSecureStorage _secureStorage;
-  static const String baseUrl = "http://www.sdfgh.com/api";
+  static const String baseUrl = "https://river-production.up.railway.app/api";
   static const String tokenKey = "token_key";
 
   DioClient(Dio dio, this._secureStorage) {
