@@ -8,7 +8,9 @@ const { NODE_ENV, PORT } = env;
 
 // await connectMongo();
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(
+    "mongodb+srv://harshsharma55115:n70eWb1EImf7EsOT@tuto-1.gqteplu.mongodb.net/river_db?retryWrites=true&w=majority&appName=tuto-1"
+  )
   .then(() => console.log("MONGO_CONNECTED"))
   .catch((err) => console.error("MONGO_CONNECTION_ERROR", err));
 
