@@ -4,6 +4,7 @@ import cors from "cors";
 import { initLogger } from "./utils/logger.js";
 import routes from "./routes/index.js";
 import { errorHandler } from "./middleware/error.middleware.js";
+import mongoose from "mongoose";
 const app = express();
 app.use(
   cors({
