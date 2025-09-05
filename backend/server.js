@@ -5,8 +5,5 @@ import logger from "./src/utils/logger.js";
 
 const { PORT } = env;
 
-connectMongo().then(() => {
-  app.listen(PORT, () => {
-    logger.info(`APP_CONNECTED: ${PORT}`);
-  });
-});
+connectMongo().then(() => {});
+export default app;

@@ -9,7 +9,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:6789",
+    origin: "https://river-ruddy.vercel.app",
     credentials: true,
   })
 );
