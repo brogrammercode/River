@@ -11,12 +11,7 @@ const connectMongo = async () => {
       return;
     }
 
-    await mongoose.connect(MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 10000,
-    });
-
+    await mongoose.connect(MONGO_URI); 
     logger.info(`MONGO_CONNECTED: ${mongoose.connection.host}`);
   } catch (err) {
     logger.error("MONGO_ERROR:", err.message);
