@@ -42,6 +42,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final user = await _repo.login(email: email, password: password);
       final token = await _repo.getToken();
       state = state.copyWith(
+        userID: user.id,
         user: user,
         token: token,
         loginStatus: CommonStatus.success,

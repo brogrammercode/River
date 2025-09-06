@@ -14,5 +14,6 @@ router.get("/", getUserItems);
 router.get("/assigned", getAssignedItems);
 router.post("/", createItem);
 router.patch("/:itemID/reassign", changeAssignmentToOtherReceiver);
+router.put("/:itemID", updateItem); // PUT /api/items/:itemID
 
 export default router;

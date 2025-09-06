@@ -3,6 +3,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:frontend/core/dio/dio_client.dart';
 import 'package:frontend/features/auth/data/data_source/auth_data_source.dart';
 import 'package:frontend/features/auth/domain/repo/auth_repo.dart';
+import 'package:frontend/features/items/data/data_source/item_data_source.dart';
+import 'package:frontend/features/items/domain/repo/item_repo.dart';
 import 'package:get_it/get_it.dart';
 
 class Injections {
@@ -18,9 +20,14 @@ class Injections {
       () => DioClient(_getIt(), _getIt()),
     );
 
-    // Share Feature
+    // Auth Feature
     _getIt.registerLazySingleton<AuthRepo>(
       () => AuthDataSource(flutterSecureStorage: _getIt(), dioClient: _getIt()),
+    );
+
+    // Auth Feature
+    _getIt.registerLazySingleton<ItemRepo>(
+      () => ItemDataSource(dioClient: _getIt()),
     );
   }
 

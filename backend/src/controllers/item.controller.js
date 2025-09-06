@@ -61,3 +61,19 @@ export const changeAssignmentToOtherReceiver = asyncHandler(
       .json(new ApiResponse(true, "Item reassigned successfully", updatedItem));
   }
 );
+
+export const updateItem = asyncHandler(async (req, res) => {
+  const { itemID } = req.params;
+  const currentUser = req.user;
+  const updateData = req.body;
+
+  const updatedItem = await ItemService.updateItem({
+    itemID,
+    userID: currentUser._id,
+    updateData,
+  });
+
+  res
+    .status(200)
+    .json(new ApiResponse(true, "Item updated successfully", updatedItem));
+});

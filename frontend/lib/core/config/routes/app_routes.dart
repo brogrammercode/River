@@ -2,26 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:frontend/features/auth/presentation/pages/login_page.dart';
 import 'package:frontend/features/auth/presentation/pages/register_page.dart';
 import 'package:frontend/features/items/presentation/pages/items_page.dart';
+import 'package:frontend/features/main/splash_screen.dart';
 
 class AppRoutes {
   static const String core = '/';
   static const String register = '/register';
   static const String login = '/login';
   static const String items = '/items';
-  static const String addItem = '/addItem';
 
   // route
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case core:
-        return MaterialPageRoute(builder: (_) => const LoginPage());
+        return MaterialPageRoute(builder: (_) => const SplashScreen());
       case register:
         return MaterialPageRoute(builder: (_) => const RegisterPage());
       case login:
         return MaterialPageRoute(builder: (_) => const LoginPage());
       case items:
         return MaterialPageRoute(builder: (_) => const ItemsPage());
-      case addItem:
 
       // default
       default:

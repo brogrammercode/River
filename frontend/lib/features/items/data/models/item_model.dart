@@ -1,11 +1,12 @@
 import 'package:equatable/equatable.dart';
+import 'package:frontend/features/auth/data/models/user_model.dart';
 
 class ItemModel extends Equatable {
   final String? id;
   final String? content;
-  final String? uid;
+  final UserModel? uid;
   final String? status;
-  final String? currentlyAssignedTo;
+  final UserModel? currentlyAssignedTo;
   final List<TotalAssignedPeopleModel> totalAssignedPeoples;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -24,9 +25,9 @@ class ItemModel extends Equatable {
   ItemModel copyWith({
     String? id,
     String? content,
-    String? uid,
+    UserModel? uid,
     String? status,
-    String? currentlyAssignedTo,
+    UserModel? currentlyAssignedTo,
     List<TotalAssignedPeopleModel>? totalAssignedPeoples,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -48,9 +49,11 @@ class ItemModel extends Equatable {
     return ItemModel(
       id: json['_id'] as String?,
       content: json['content'] as String?,
-      uid: json['uid'] as String?,
+      uid: json['uid'] != null ? UserModel.fromJson(json['uid']) : null,
       status: json['status'] as String?,
-      currentlyAssignedTo: json['currentlyAssignedTo'] as String?,
+      currentlyAssignedTo: json['currentlyAssignedTo'] != null
+          ? UserModel.fromJson(json['currentlyAssignedTo'])
+          : null,
       totalAssignedPeoples:
           (json['totalAssignedPeoples'] as List<dynamic>?)
               ?.map(
@@ -73,9 +76,9 @@ class ItemModel extends Equatable {
     return {
       '_id': id,
       'content': content,
-      'uid': uid,
+      'uid': uid?.toJson(),
       'status': status,
-      'currentlyAssignedTo': currentlyAssignedTo,
+      'currentlyAssignedTo': currentlyAssignedTo?.toJson(),
       'totalAssignedPeoples': totalAssignedPeoples
           .map((e) => e.toJson())
           .toList(),
@@ -98,7 +101,7 @@ class ItemModel extends Equatable {
 }
 
 class TotalAssignedPeopleModel extends Equatable {
-  final String? assignedTo;
+  final UserModel? assignedTo;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -109,7 +112,7 @@ class TotalAssignedPeopleModel extends Equatable {
   });
 
   TotalAssignedPeopleModel copyWith({
-    String? assignedTo,
+    UserModel? assignedTo,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -123,7 +126,9 @@ class TotalAssignedPeopleModel extends Equatable {
   factory TotalAssignedPeopleModel.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const TotalAssignedPeopleModel();
     return TotalAssignedPeopleModel(
-      assignedTo: json['assignedTo'] as String?,
+      assignedTo: json['assignedTo'] != null
+          ? UserModel.fromJson(json['assignedTo'])
+          : null,
       createdAt: json['createdAt'] != null
           ? DateTime.tryParse(json['createdAt'])
           : null,
@@ -135,7 +140,7 @@ class TotalAssignedPeopleModel extends Equatable {
 
   Map<String, dynamic> toJson() {
     return {
-      'assignedTo': assignedTo,
+      'assignedTo': assignedTo?.toJson(),
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
     };

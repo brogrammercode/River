@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:frontend/core/dio/api_response.dart';
@@ -182,8 +184,10 @@ class AuthDataSource implements AuthRepo {
       }
     } on DioException catch (e) {
       throw _handleDioError(e);
-    } catch (e) {
+    } catch (e, stack) {
       if (e is ServerException) rethrow;
+      log("GET_ME raw error: $e");
+      log("STACKTRACE: $stack");
       throw ServerException("GET_ME_ERROR: Unexpected error occurred");
     }
   }

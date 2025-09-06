@@ -142,4 +142,32 @@ export class ItemService {
       throw new CustomError(err.message || "Failed to change assignment");
     }
   }
+
+  static async updateItem({ itemID, userID, updateData }) {
+    try {
+      const item = await Item.findById(itemID);
+      if (!item) throw new CustomError("Item not found");
+
+      // only the creator can update
+      if (String(item.uid) !== String(userID)) {
+        throw new CustomError("You are not authorized to update this item");
+      }
+
+      const allowedFields = ["content", "status"];
+      allowedFields.forEach((field) => {
+        if (updateData[field] !== undefined) {
+          item[field] = updateData[field];
+        }
+      });
+
+      await item.save();
+
+      return await Item.findById(item._id)
+        .populate("uid", "name email role")
+        .populate("currentlyAssignedTo", "name email role")
+        .populate("totalAssignedPeoples.assignedTo", "name email role");
+    } catch (err) {
+      throw new CustomError(err.message || "Failed to update item");
+    }
+  }
 }
