@@ -1,65 +1,145 @@
 import Item from "../models/Item.js";
+import User from "../models/User.js";
 import { CustomError } from "../utils/customError.js";
 
 export class ItemService {
   static async getUserItems({ userID, options = {} }) {
-    const { page = 1, limit = 10, status } = options;
-    const skip = (page - 1) * limit;
+    try {
+      const { page = 1, limit = 10, status } = options;
+      const skip = (page - 1) * limit;
 
-    const filters = { uid: userID };
-    if (status) filters.status = status;
+      const filters = { uid: userID };
+      if (status) filters.status = status;
 
-    const items = await Item.find(filters)
-      .populate("uid", "name email role")
-      .populate("currentlyAssignedTo", "name email role")
-      .populate("totalAssignedPeoples.assignedTo", "name email role")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(parseInt(limit));
+      const items = await Item.find(filters)
+        .populate("uid", "name email role")
+        .populate("currentlyAssignedTo", "name email role")
+        .populate("totalAssignedPeoples.assignedTo", "name email role")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(parseInt(limit));
 
-    const total = await Item.countDocuments(filters);
+      const total = await Item.countDocuments(filters);
 
-    return {
-      items,
-      pagination: {
-        current: parseInt(page),
-        total: Math.ceil(total / limit),
-        count: items.length,
-        totalRecords: total,
-      },
-    };
+      return {
+        items,
+        pagination: {
+          current: parseInt(page),
+          total: Math.ceil(total / limit),
+          pageCount: items.length,
+          totalRecords: total,
+        },
+      };
+    } catch (err) {
+      throw new CustomError(err.message || "Failed to fetch user items");
+    }
+  }
+
+  static async getAssignedItems({ userID, options = {} }) {
+    try {
+      const { page = 1, limit = 10, status } = options;
+      const skip = (page - 1) * limit;
+
+      const filters = { currentlyAssignedTo: userID };
+      if (status) filters.status = status;
+
+      const items = await Item.find(filters)
+        .populate("uid", "name email role")
+        .populate("currentlyAssignedTo", "name email role")
+        .populate("totalAssignedPeoples.assignedTo", "name email role")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(parseInt(limit));
+
+      const total = await Item.countDocuments(filters);
+
+      return {
+        items,
+        pagination: {
+          current: parseInt(page),
+          total: Math.ceil(total / limit),
+          pageCount: items.length,
+          totalRecords: total,
+        },
+      };
+    } catch (err) {
+      throw new CustomError(err.message || "Failed to fetch assigned items");
+    }
   }
 
   static async createItem({ itemData, userID }) {
-    const adminUsers = await User.find({
-      _id: { $ne: userID },
-      role: "admin",
-    });
+    try {
+      const adminUsers = await User.find({
+        _id: { $ne: userID },
+        role: "Receiver",
+      });
 
-    if (adminUsers.length === 0) {
-      throw new CustomError("No admin users available to assign this item");
+      if (adminUsers.length === 0) {
+        throw new CustomError(
+          "No receiver users available to assign this item"
+        );
+      }
+
+      const randomAdmin =
+        adminUsers[Math.floor(Math.random() * adminUsers.length)];
+
+      const newItemData = {
+        ...itemData,
+        uid: userID,
+        currentlyAssignedTo: randomAdmin._id,
+        totalAssignedPeoples: [
+          {
+            assignedTo: randomAdmin._id,
+          },
+        ],
+      };
+
+      const item = new Item(newItemData);
+      const savedItem = await item.save();
+
+      return await Item.findById(savedItem._id)
+        .populate("uid", "name email role")
+        .populate("currentlyAssignedTo", "name email role")
+        .populate("totalAssignedPeoples.assignedTo", "name email role");
+    } catch (err) {
+      throw new CustomError(err.message || "Failed to create item");
     }
+  }
 
-    const randomAdmin =
-      adminUsers[Math.floor(Math.random() * adminUsers.length)];
+  static async changeAssignmentToOtherReceiver({ itemID, userID }) {
+    try {
+      const item = await Item.findById(itemID);
+      if (!item) throw new CustomError("Item not found");
 
-    const newItemData = {
-      ...itemData,
-      uid: userID,
-      currentlyAssignedTo: randomAdmin._id,
-      totalAssignedPeoples: [
-        {
-          assignedTo: randomAdmin._id,
-        },
-      ],
-    };
+      if (String(item.currentlyAssignedTo) !== String(userID)) {
+        throw new CustomError("You are not the current assignee of this item");
+      }
 
-    const item = new Item(newItemData);
-    const savedItem = await item.save();
+      const otherReceivers = await User.find({
+        _id: { $nin: [userID] },
+        role: "Receiver",
+      });
 
-    return await Item.findById(savedItem._id)
-      .populate("uid", "name email role")
-      .populate("currentlyAssignedTo", "name email role")
-      .populate("totalAssignedPeoples.assignedTo", "name email role");
+      if (otherReceivers.length === 0) {
+        throw new CustomError("No other receiver available for reassignment");
+      }
+
+      const newReceiver =
+        otherReceivers[Math.floor(Math.random() * otherReceivers.length)];
+
+      item.currentlyAssignedTo = newReceiver._id;
+      item.totalAssignedPeoples.push({
+        assignedTo: newReceiver._id,
+      });
+
+      await item.save();
+
+      return await Item.findById(item._id)
+        .populate("uid", "name email role")
+        .populate("currentlyAssignedTo", "name email role")
+        .populate("totalAssignedPeoples.assignedTo", "name email role");
+    } catch (err) {
+      throw new CustomError(err.message || "Failed to change assignment");
+    }
   }
 }
