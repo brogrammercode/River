@@ -1,17 +1,20 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:forui/forui.dart';
+import 'package:frontend/core/config/routes/app_routes.dart';
+import 'package:frontend/core/error/common_error.dart';
+import 'package:frontend/core/providers/providers.dart';
 
-class RegisterPage extends StatefulWidget {
+class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  ConsumerState<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage>
+class _RegisterPageState extends ConsumerState<RegisterPage>
     with SingleTickerProviderStateMixin {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
@@ -19,7 +22,7 @@ class _RegisterPageState extends State<RegisterPage>
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  final roles = ["End User", "Receiver"];
+  final roles = ["Consumer", "Receiver"];
 
   @override
   void initState() {
@@ -36,8 +39,38 @@ class _RegisterPageState extends State<RegisterPage>
     super.dispose();
   }
 
+  Future<void> _register() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final notifier = ref.read(authNotifierProvider.notifier);
+
+    try {
+      await notifier.register(
+        name: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+        role: _roleController.value ?? "Consumer",
+      );
+
+      final user = ref.read(authNotifierProvider).user;
+      log(
+        "Register success: UserID=${user?.id}, Name=${user?.name}, Email=${user?.email}",
+      );
+      if (user?.name != null) {
+        if (!mounted) return;
+        Navigator.pushNamedAndRemoveUntil(context, "/items", (route) => false);
+      }
+    } catch (e) {
+      log("Login error: $e");
+      if (!mounted) return;
+      FToast(title: Text("Login Error"), description: Text(e.toString()));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authNotifierProvider);
+    final isLoading = authState.loginStatus == CommonStatus.loading;
     return FScaffold(
       child: Form(
         key: _formKey,
@@ -49,9 +82,8 @@ class _RegisterPageState extends State<RegisterPage>
                 SizedBox(height: 150.h),
                 Icon(FIcons.codesandbox, size: 70.r),
                 SizedBox(height: 20.h),
-                Text("FItem"),
+                const Text("Register"),
                 SizedBox(height: 50.h),
-
                 FTextFormField(
                   label: const Text("Name"),
                   controller: _nameController,
@@ -87,15 +119,29 @@ class _RegisterPageState extends State<RegisterPage>
                   children: [for (final role in roles) FSelectItem(role, role)],
                 ),
                 SizedBox(height: 40.h),
+                isLoading
+                    ? const CircularProgressIndicator()
+                    : FButton(
+                        onPress: _register,
+                        child: const Text('Register'),
+                      ),
+                if (authState.loginStatus == CommonStatus.failure &&
+                    authState.error.consoleMessage.isNotEmpty)
+                  Padding(
+                    padding: EdgeInsets.only(top: 20.h),
+                    child: Text(
+                      authState.error.consoleMessage,
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+
+                SizedBox(height: 20.h),
                 FButton(
-                  child: const Text('Register'),
+                  style: FButtonStyle.secondary(),
                   onPress: () {
-                    if (!_formKey.currentState!.validate()) return;
-                    final role = _roleController.value;
-                    log("Name: ${_nameController.text}");
-                    log("Email: ${_emailController.text}");
-                    log("Role: $role");
+                    Navigator.pushReplacementNamed(context, AppRoutes.login);
                   },
+                  child: Text("Login instead"),
                 ),
               ],
             ),

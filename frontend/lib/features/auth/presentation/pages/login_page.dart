@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:forui/forui.dart';
+import 'package:frontend/core/config/routes/app_routes.dart';
 import 'package:frontend/core/providers/providers.dart';
 import 'package:frontend/core/error/common_error.dart';
 
@@ -42,11 +43,16 @@ class _LoginPageState extends ConsumerState<LoginPage>
       log(
         "Login success: UserID=${user?.id}, Name=${user?.name}, Email=${user?.email}",
       );
+      if (user?.name != null) {
+        if (!mounted) return;
+        Navigator.pushNamedAndRemoveUntil(context, "/items", (route) => false);
+      }
     } catch (e) {
       log("Login error: $e");
+      if (!mounted) return;
+      FToast(title: Text("Login Error"), description: Text(e.toString()));
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -95,6 +101,14 @@ class _LoginPageState extends ConsumerState<LoginPage>
                       style: TextStyle(color: Colors.red),
                     ),
                   ),
+                SizedBox(height: 20.h),
+                FButton(
+                  style: FButtonStyle.secondary(),
+                  onPress: () {
+                    Navigator.pushReplacementNamed(context, AppRoutes.register);
+                  },
+                  child: Text("Register instead"),
+                ),
               ],
             ),
           ),
