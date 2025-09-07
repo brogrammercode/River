@@ -4,7 +4,15 @@ import { JwtUtils } from "../utils/jwt.js";
 
 export const authenticate = async (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    let token;
+    const authHeader = req.headers["authorization"];
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.split(" ")[1];
+    }
+    if (!token && req.cookies?.token) {
+      token = req.cookies.token;
+    }
+
     if (!token) {
       throw new CustomError("Access denied. No token provided.", 401);
     }

@@ -16,9 +16,9 @@ app.use(
 
 app.use(express.json());
 app.use(cookieParser());
+app.use(initLogger);
 app.get("/", (req, res) => res.send("Server is running!"));
 app.use("/api", routes);
-app.use(initLogger);
 app.use(errorHandler);
 
 export default app;
