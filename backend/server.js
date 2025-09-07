@@ -27,7 +27,7 @@ io.on("connection", (socket) => {
 app.set("io", io);
 
 connectMongo().then(() => {
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     logger.info(`APP_CONNECTED: ${PORT}`);
     logger.info(`SOCKE.IO_RUNNING_CONNECTED: ${PORT}`);
   });
