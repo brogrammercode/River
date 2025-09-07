@@ -12,6 +12,7 @@ class AuthDataSource implements AuthRepo {
   final FlutterSecureStorage _flutterSecureStorage;
   final DioClient _dioClient;
   static const String tokenKey = "token_key";
+  static const String userIdKey = "user_id";
 
   AuthDataSource({
     required FlutterSecureStorage flutterSecureStorage,
@@ -48,6 +49,34 @@ class AuthDataSource implements AuthRepo {
   }
 
   @override
+  Future<void> clearUID() async {
+    try {
+      await _flutterSecureStorage.delete(key: userIdKey);
+    } catch (e) {
+      throw CacheException("CLEAR_TOKEN_ERROR: $e");
+    }
+  }
+
+  @override
+  Future<void> saveUID({required String uid}) async {
+    try {
+      await _flutterSecureStorage.write(key: userIdKey, value: uid);
+    } catch (e) {
+      throw CacheException("SAVE_TOKEN_ERROR: $e");
+    }
+  }
+
+  @override
+  Future<String> getUID() async {
+    try {
+      final token = await _flutterSecureStorage.read(key: userIdKey);
+      return token ?? "";
+    } catch (e) {
+      throw CacheException("GET_TOKEN_ERROR: $e");
+    }
+  }
+
+  @override
   Future<UserModel> login({
     required String email,
     required String password,
@@ -68,7 +97,7 @@ class AuthDataSource implements AuthRepo {
 
       if (apiResponse.success && apiResponse.data != null) {
         final user = apiResponse.data as UserModel;
-
+        await saveUID(uid: user.id ?? "");
         final responseData = response.data as Map<String, dynamic>;
         final token = responseData['data']?['token'] as String?;
 
@@ -105,6 +134,7 @@ class AuthDataSource implements AuthRepo {
       }
 
       await clearToken();
+      await clearUID();
     } on DioException catch (e) {
       await clearToken();
       throw _handleDioError(e);
@@ -143,7 +173,7 @@ class AuthDataSource implements AuthRepo {
 
       if (apiResponse.success && apiResponse.data != null) {
         final user = apiResponse.data as UserModel;
-
+        await saveUID(uid: user.id ?? "");
         final responseData = response.data as Map<String, dynamic>;
         final token = responseData['data']?['token'] as String?;
 

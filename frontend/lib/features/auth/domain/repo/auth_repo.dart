@@ -13,4 +13,7 @@ abstract interface class AuthRepo {
   Future<String> getToken();
   Future<void> saveToken({required String token});
   Future<void> clearToken();
+  Future<String> getUID();
+  Future<void> saveUID({required String uid});
+  Future<void> clearUID();
 }

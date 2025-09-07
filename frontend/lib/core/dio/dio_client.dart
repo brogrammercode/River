@@ -79,30 +79,35 @@ class DioClient {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onError: (error, handler) async {
-          if (_shouldRetry(error) &&
-              error.requestOptions.extra['retryCount'] == null) {
-            error.requestOptions.extra['retryCount'] = 1;
-            log('🔄 Retrying request: ${error.requestOptions.uri}');
+          final options = error.requestOptions;
+          int retries = options.extra['retryCount'] ?? 0;
+
+          if (_shouldRetry(error) && retries < 2) {
+            // limit to 2 retries
+            options.extra['retryCount'] = retries + 1;
+            log('🔄 Retrying request (${retries + 1}/2): ${options.uri}');
+
             try {
               final response = await _dio.request(
-                error.requestOptions.path,
+                options.path,
                 options: Options(
-                  method: error.requestOptions.method,
-                  headers: error.requestOptions.headers,
+                  method: options.method,
+                  headers: options.headers,
                 ),
-                data: error.requestOptions.data,
-                queryParameters: error.requestOptions.queryParameters,
+                data: options.data,
+                queryParameters: options.queryParameters,
               );
-              handler.resolve(response);
+              return handler.resolve(response);
             } catch (_) {
-              handler.next(error);
+              return handler.next(error);
             }
           } else {
-            handler.next(error);
+            return handler.next(error);
           }
         },
       ),
     );
+
   }
 
   bool _shouldRetry(DioException error) {
