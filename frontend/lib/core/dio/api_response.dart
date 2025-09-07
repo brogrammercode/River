@@ -20,21 +20,43 @@ class ApiResponse<T> extends Equatable {
     T Function(Object?)? fromJsonT,
   }) {
     if (json == null) {
-      return const ApiResponse(success: false, message: "No response");
+      return const ApiResponse(
+        success: false,
+        message: "No response",
+        data: null,
+      );
     }
-    return ApiResponse<T>(
-      success: json['success'] as bool? ?? false,
-      message: json['message'] as String? ?? '',
-      data: fromJsonT != null ? fromJsonT(json['data']) : json['data'] as T?,
-    );
+
+    final success = json['success'] as bool? ?? false;
+    final message = json['message'] as String? ?? '';
+
+    T? parsedData;
+    try {
+      if (fromJsonT != null && json.containsKey('data')) {
+        parsedData = json['data'] != null ? fromJsonT(json['data']) : null;
+      } else if (json.containsKey('data')) {
+        parsedData = json['data'] as T?;
+      }
+    } catch (_) {
+      parsedData = null;
+    }
+
+    return ApiResponse<T>(success: success, message: message, data: parsedData);
   }
 
   Map<String, dynamic> toJson({Object? Function(T)? toJsonT}) {
-    return {
-      'success': success,
-      'message': message,
-      'data': toJsonT != null ? toJsonT(data as T) : data,
-    };
+    Object? encodedData;
+    try {
+      if (toJsonT != null && data != null) {
+        encodedData = toJsonT(data as T);
+      } else {
+        encodedData = data;
+      }
+    } catch (_) {
+      encodedData = null;
+    }
+
+    return {'success': success, 'message': message, 'data': encodedData};
   }
 
   @override

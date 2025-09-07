@@ -37,6 +37,7 @@ class DioClient {
         onRequest: (options, handler) async {
           try {
             final token = await _secureStorage.read(key: tokenKey);
+            log("TOKEN IN INTERCEPTOR: $token");
             if (token != null && token.isNotEmpty) {
               options.headers['Authorization'] = 'Bearer $token';
             }
@@ -48,6 +49,7 @@ class DioClient {
           } catch (e) {
             log('❌ Error setting up request: $e');
           }
+          log('FINAL HEADERS: ${options.headers}');
           handler.next(options);
         },
         onResponse: (response, handler) {
