@@ -4,6 +4,7 @@ import {
   getUserItems,
   getAssignedItems,
   changeAssignmentToOtherReceiver,
+  updateItem,
 } from "../controllers/item.controller.js";
 import { authenticate } from "../middleware/auth.middleware.js";
 
