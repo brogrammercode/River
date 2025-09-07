@@ -67,7 +67,7 @@ export class ItemService {
     }
   }
 
-  static async createItem({ itemData, userID }) {
+  static async createItem({ itemData, userID, io }) {
     try {
       const adminUsers = await User.find({
         _id: { $ne: userID },
@@ -97,16 +97,25 @@ export class ItemService {
       const item = new Item(newItemData);
       const savedItem = await item.save();
 
-      return await Item.findById(savedItem._id)
+      const populatedItem = await Item.findById(savedItem._id)
         .populate("uid", "name email role")
         .populate("currentlyAssignedTo", "name email role")
         .populate("totalAssignedPeoples.assignedTo", "name email role");
+
+      if (io) {
+        io.emit("data_update", {
+          type: "ITEM_CREATED",
+          data: populatedItem,
+        });
+      }
+
+      return populatedItem;
     } catch (err) {
       throw new CustomError(err.message || "Failed to create item");
     }
   }
 
-  static async changeAssignmentToOtherReceiver({ itemID, userID }) {
+  static async changeAssignmentToOtherReceiver({ itemID, userID, io }) {
     try {
       const item = await Item.findById(itemID);
       if (!item) throw new CustomError("Item not found");
@@ -134,16 +143,26 @@ export class ItemService {
 
       await item.save();
 
-      return await Item.findById(item._id)
+      const populatedItem = await Item.findById(item._id)
         .populate("uid", "name email role")
         .populate("currentlyAssignedTo", "name email role")
         .populate("totalAssignedPeoples.assignedTo", "name email role");
+
+      // Emit data update to all clients
+      if (io) {
+        io.emit("data_update", {
+          type: "ITEM_REASSIGNED",
+          data: populatedItem,
+        });
+      }
+
+      return populatedItem;
     } catch (err) {
       throw new CustomError(err.message || "Failed to change assignment");
     }
   }
 
-  static async updateItem({ itemID, userID, updateData }) {
+  static async updateItem({ itemID, userID, updateData, io }) {
     try {
       const item = await Item.findById(itemID);
       if (!item) throw new CustomError("Item not found");
@@ -161,10 +180,20 @@ export class ItemService {
 
       await item.save();
 
-      return await Item.findById(item._id)
+      const populatedItem = await Item.findById(item._id)
         .populate("uid", "name email role")
         .populate("currentlyAssignedTo", "name email role")
         .populate("totalAssignedPeoples.assignedTo", "name email role");
+
+      // Emit data update to all clients
+      if (io) {
+        io.emit("data_update", {
+          type: "ITEM_UPDATED",
+          data: populatedItem,
+        });
+      }
+
+      return populatedItem;
     } catch (err) {
       throw new CustomError(err.message || "Failed to update item");
     }

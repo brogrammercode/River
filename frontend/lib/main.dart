@@ -5,11 +5,18 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:forui/forui.dart';
 import 'package:frontend/core/di/container.dart';
 import 'package:frontend/core/config/routes/app_routes.dart';
+import 'package:frontend/core/socket/socket.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   Injections.init();
+  _initializeSocket();
   runApp(const Application());
+}
+
+void _initializeSocket() {
+  const serverUrl = 'https://river-production.up.railway.app';
+  SocketService.instance.connect(serverUrl);
 }
 
 class Application extends StatelessWidget {

@@ -48,10 +48,12 @@ export const getAssignedItems = asyncHandler(async (req, res) => {
 export const createItem = asyncHandler(async (req, res) => {
   const { content, status } = req.body;
   const currentUser = req.user;
+  const io = req.app.get("io");
 
   const item = await ItemService.createItem({
     itemData: { content, status },
     userID: currentUser._id,
+    io,
   });
 
   res
@@ -63,10 +65,12 @@ export const changeAssignmentToOtherReceiver = asyncHandler(
   async (req, res) => {
     const { itemID } = req.params;
     const currentUser = req.user;
+    const io = req.app.get("io");
 
     const updatedItem = await ItemService.changeAssignmentToOtherReceiver({
       itemID,
       userID: currentUser._id,
+      io,
     });
 
     res
@@ -79,11 +83,13 @@ export const updateItem = asyncHandler(async (req, res) => {
   const { itemID } = req.params;
   const currentUser = req.user;
   const updateData = req.body;
+  const io = req.app.get("io");
 
   const updatedItem = await ItemService.updateItem({
     itemID,
     userID: currentUser._id,
     updateData,
+    io,
   });
 
   res

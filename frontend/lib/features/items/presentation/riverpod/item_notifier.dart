@@ -1,16 +1,62 @@
 import 'dart:developer';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:frontend/core/error/common_error.dart';
+import 'package:frontend/core/socket/socket.dart';
 import 'package:frontend/features/items/data/models/item_model.dart';
 import 'package:frontend/features/items/domain/repo/item_repo.dart';
 import 'package:frontend/features/items/presentation/riverpod/item_state.dart';
 
 class ItemNotifier extends StateNotifier<ItemState> {
   final ItemRepo _repo;
+  final SocketService _socketService = SocketService.instance;
 
   ItemNotifier({required ItemRepo repo})
     : _repo = repo,
-      super(const ItemState());
+      super(const ItemState()) {
+    _initializeSocket();
+  }
+
+  void _initializeSocket() {
+    _socketService.setDataUpdateCallback((data) {
+      _handleSocketUpdate(data);
+    });
+  }
+
+  void _handleSocketUpdate(Map<String, dynamic> data) {
+    try {
+      final type = data['type'] as String?;
+      final itemData = data['data'];
+
+      if (itemData != null && type != null) {
+        final updatedItem = ItemModel.fromJson(itemData);
+
+        switch (type) {
+          case 'ITEM_CREATED':
+            _handleItemCreated(updatedItem);
+            break;
+          case 'ITEM_UPDATED':
+          case 'ITEM_REASSIGNED':
+            _handleItemUpdated(updatedItem);
+            break;
+        }
+      }
+    } catch (e) {
+      log('Error handling socket update: $e');
+    }
+  }
+
+  void _handleItemCreated(ItemModel newItem) {
+    final updatedItems = [newItem, ...state.userItems];
+    state = state.copyWith(userItems: updatedItems);
+  }
+
+  void _handleItemUpdated(ItemModel updatedItem) {
+    final updatedItems = state.userItems.map((item) {
+      return item.id == updatedItem.id ? updatedItem : item;
+    }).toList();
+
+    state = state.copyWith(userItems: updatedItems);
+  }
 
   Future<void> getUserItems() async {
     try {
@@ -34,7 +80,7 @@ class ItemNotifier extends StateNotifier<ItemState> {
       state = state.copyWith(createItemStatus: CommonStatus.loading);
       final success = await _repo.createItem(item: item);
       if (success) {
-        await getUserItems();
+        // await getUserItems();
         state = state.copyWith(createItemStatus: CommonStatus.success);
       } else {
         state = state.copyWith(createItemStatus: CommonStatus.failure);
@@ -59,7 +105,7 @@ class ItemNotifier extends StateNotifier<ItemState> {
         updatedItem: updatedItem,
       );
       if (success) {
-        await getUserItems();
+        // await getUserItems();
         state = state.copyWith(updateItemStatus: CommonStatus.success);
       } else {
         state = state.copyWith(updateItemStatus: CommonStatus.failure);
@@ -80,7 +126,7 @@ class ItemNotifier extends StateNotifier<ItemState> {
         itemID: itemID,
       );
       if (success) {
-        await getUserItems();
+        // await getUserItems();
         state = state.copyWith(changeAssignmentStatus: CommonStatus.success);
       } else {
         state = state.copyWith(changeAssignmentStatus: CommonStatus.failure);
