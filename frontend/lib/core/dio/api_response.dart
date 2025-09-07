@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:equatable/equatable.dart';
 
 class ApiResponse<T> extends Equatable {
@@ -19,6 +20,8 @@ class ApiResponse<T> extends Equatable {
     Map<String, dynamic>? json, {
     T Function(Object?)? fromJsonT,
   }) {
+    log('🔹 Raw API Response: $json'); // Always log the full response
+
     if (json == null) {
       return const ApiResponse(
         success: false,
@@ -37,7 +40,8 @@ class ApiResponse<T> extends Equatable {
       } else if (json.containsKey('data')) {
         parsedData = json['data'] as T?;
       }
-    } catch (_) {
+    } catch (e) {
+      log('❌ Error parsing data: $e');
       parsedData = null;
     }
 
@@ -52,11 +56,14 @@ class ApiResponse<T> extends Equatable {
       } else {
         encodedData = data;
       }
-    } catch (_) {
+    } catch (e) {
+      log('❌ Error encoding data: $e');
       encodedData = null;
     }
 
-    return {'success': success, 'message': message, 'data': encodedData};
+    final json = {'success': success, 'message': message, 'data': encodedData};
+    log('🔹 API Response toJson: $json'); // Log when converting back to JSON
+    return json;
   }
 
   @override

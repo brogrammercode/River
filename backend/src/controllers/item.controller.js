@@ -6,14 +6,27 @@ export const getUserItems = asyncHandler(async (req, res) => {
   const { page, limit, status } = req.query;
   const currentUser = req.user;
 
-  const result = await ItemService.getUserItems({
-    userID: currentUser._id,
-    options: { page, limit, status },
-  });
+  if (currentUser.role === "Receiver") {
+    const result = await ItemService.getAssignedItems({
+      userID: currentUser._id,
+      options: { page, limit, status },
+    });
 
-  res
-    .status(200)
-    .json(new ApiResponse(true, "Items retrieved successfully", result));
+    res
+      .status(200)
+      .json(
+        new ApiResponse(true, "Assigned items retrieved successfully", result)
+      );
+  } else {
+    const result = await ItemService.getUserItems({
+      userID: currentUser._id,
+      options: { page, limit, status },
+    });
+
+    res
+      .status(200)
+      .json(new ApiResponse(true, "Items retrieved successfully", result));
+  }
 });
 
 export const getAssignedItems = asyncHandler(async (req, res) => {

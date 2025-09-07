@@ -17,11 +17,13 @@ class ItemDataSource implements ItemRepo {
 
       final apiResponse = ApiResponse.fromJson(
         response.data,
-        fromJsonT: (json) {
-          final list = json as List<dynamic>;
-          return list.map((e) => ItemModel.fromJson(e)).toList();
+        fromJsonT: (data) {
+          final dataMap = data as Map<String, dynamic>;
+          final itemsList = dataMap['items'] as List<dynamic>?;
+          return itemsList?.map((e) => ItemModel.fromJson(e)).toList() ?? [];
         },
       );
+
 
       if (apiResponse.success && apiResponse.data != null) {
         return apiResponse.data as List<ItemModel>;

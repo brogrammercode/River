@@ -1,41 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:forui/forui.dart';
-import 'package:frontend/core/utils/seed_data/seed_items.dart';
+import 'package:frontend/core/error/common_error.dart';
+import 'package:frontend/core/providers/providers.dart';
 import 'package:frontend/features/items/data/models/item_model.dart';
 
-class ItemsPage extends StatefulWidget {
+class ItemsPage extends ConsumerStatefulWidget {
   const ItemsPage({super.key});
 
   @override
-  State<ItemsPage> createState() => _ItemsPageState();
+  ConsumerState<ItemsPage> createState() => _ItemsPageState();
 }
 
-class _ItemsPageState extends State<ItemsPage> {
-  final List<ItemModel> _items = seedItems
-      .map((e) => ItemModel.fromJson(e))
-      .toList();
+class _ItemsPageState extends ConsumerState<ItemsPage> {
+  final TextEditingController _controller = TextEditingController();
 
-  void _addItem(String content) {
-    final newItem = ItemModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      content: content,
-      status: "New",
-    );
-    setState(() {
-      _items.insert(0, newItem);
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(itemNotifierProvider.notifier).getUserItems();
     });
   }
 
   void _showAddItemDialog() {
-    final TextEditingController controller = TextEditingController();
     showDialog(
       context: context,
       builder: (ctx) {
         return FDialog(
           title: const Text("Add Item"),
           body: FTextFormField(
-            controller: controller,
+            controller: _controller,
             hint: "Enter content",
             autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: (value) =>
@@ -47,10 +43,20 @@ class _ItemsPageState extends State<ItemsPage> {
               child: const Text("Cancel"),
             ),
             FButton(
-              onPress: () {
-                if (controller.text.trim().isNotEmpty) {
-                  _addItem(controller.text.trim());
+              onPress: () async {
+                final content = _controller.text.trim();
+                if (content.isNotEmpty) {
+                  final newItem = ItemModel(
+                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    content: content,
+                    status: "New",
+                  );
+                  await ref
+                      .read(itemNotifierProvider.notifier)
+                      .createItem(item: newItem);
+                  // ignore: use_build_context_synchronously
                   Navigator.of(ctx).pop();
+                  _controller.clear();
                 }
               },
               child: const Text("Add"),
@@ -63,14 +69,22 @@ class _ItemsPageState extends State<ItemsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(itemNotifierProvider);
+
+    if (state.getUserItemsStatus == CommonStatus.loading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final items = state.userItems;
+
     return Scaffold(
       body: FScaffold(
         header: const FHeader(title: Text("Items")),
         child: ListView.builder(
           padding: EdgeInsets.symmetric(horizontal: 0.w),
-          itemCount: _items.length,
+          itemCount: items.length,
           itemBuilder: (context, i) {
-            final item = _items[i];
+            final item = items[i];
             return Padding(
               padding: EdgeInsets.only(bottom: 10.h),
               child: FCard(
@@ -79,7 +93,9 @@ class _ItemsPageState extends State<ItemsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Assigned To: ${item.currentlyAssignedTo ?? 'None'}"),
+                    Text(
+                      "Assigned To: ${item.currentlyAssignedTo?.name ?? 'None'}",
+                    ),
                   ],
                 ),
               ),
