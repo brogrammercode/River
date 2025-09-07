@@ -242,7 +242,6 @@ Authorization: Bearer <jwt_token>
 {
   "title": "string",
   "description": "string",
-  "assignedTo": "user_id" // optional
 }
 ```
 
