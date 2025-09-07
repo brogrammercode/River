@@ -26,12 +26,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _checkAuth() async {
-    final authState = ref.read(authNotifierProvider);
     final authNotifier = ref.read(authNotifierProvider.notifier);
 
     try {
       await authNotifier.getToken();
-      if (authState.token.isEmpty) {
+      final token = ref.read(authNotifierProvider).token;
+      if (token.isEmpty) {
         _navigateTo("/login");
         return;
       }
@@ -40,7 +40,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       final user = ref.read(authNotifierProvider).user;
 
       if (user != null) {
-        // save uid if not present
         final savedUserId = await _storage.read(key: userIdKey);
         if (savedUserId == null || savedUserId.isEmpty) {
           await _storage.write(key: userIdKey, value: user.id);
