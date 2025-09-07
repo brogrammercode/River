@@ -79,329 +79,350 @@ river/
 └── README.md
 ```
 
-## 🛠️ Tech Stack
+## 🏗️ System Architecture
 
-### Frontend
-- **Flutter**: 3.16+
-- **Dart**: 3.2+
-- **Riverpod**: State management with code generation
-- **Dio**: HTTP client with interceptors
-- **Go Router**: Declarative routing
-- **Hive**: Local database
-- **Firebase**: Analytics, Crashlytics, FCM
-- **Flutter Gen**: Asset and color generation
+River follows a clean, scalable architecture pattern:
 
-### Backend
-- **Node.js**: 18+ with TypeScript
-- **Express.js**: Web framework
-- **MongoDB**: NoSQL database
-- **Mongoose**: Object modeling
-- **JWT**: Authentication
-- **Cloudinary**: Image/file storage
-- **Winston**: Logging
-- **Jest**: Testing framework
-- **Swagger**: API documentation
+### Backend (Node.js/Express)
+- **RESTful API** with Express.js framework
+- **Real-time Communication** via Socket.IO for live updates
+- **JWT Authentication** with secure cookie-based sessions
+- **MongoDB** for data persistence with Mongoose ODM
+- **Middleware Architecture** for authentication, error handling, and logging
+- **CORS Configuration** for secure cross-origin requests
 
-### DevOps & Tools
-- **Docker**: Containerization
-- **GitHub Actions**: CI/CD
-- **ESLint/Prettier**: Code formatting
-- **Husky**: Git hooks
-- **Conventional Commits**: Commit standards
+### Frontend (Flutter)
+- **State Management** with Riverpod for reactive programming
+- **HTTP Client** using Dio for API communication
+- **Real-time Updates** via Socket.IO client integration
+- **Responsive Design** for cross-platform compatibility
+
+### Key Features
+- User authentication and session management
+- Item creation, assignment, and management
+- Real-time notifications and updates
+- Secure API endpoints with middleware protection
+- Production-ready error handling and logging
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Flutter 3.16+ 
-- Node.js 18+
-- MongoDB 6.0+
-- Docker (optional)
+- Node.js (v16 or higher)
+- MongoDB (local or cloud instance)
+- Flutter SDK (latest stable)
+- Dart SDK
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/yourusername/river.git
-cd river
+### Backend Setup - Already hosted (https://river-production.up.railway.app/api) (expire on 17 Sept, 2025)
+
+1. **Clone and navigate to backend directory**
+   ```bash
+   git clone https://github.com/brogrammercode/River.git
+   cd backend
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Environment Configuration**
+   Create a `.env` file in the backend root:
+   ```env
+   PORT=5000
+   MONGODB_URI= <confidential>
+   JWT_SECRET=your-super-secret-jwt-key
+   NODE_ENV=development
+   ```
+
+4. **Start the development server**
+   ```bash
+   # Development mode with auto-reload
+   npm run dev
+   
+   # Production mode
+   npm start
+   ```
+
+   Server will be running on `http://localhost:5000`
+
+### Frontend Setup - Again no need just install APK
+
+1. **Navigate to Flutter app directory**
+   ```bash
+   cd frontend  # or your Flutter app directory name
+   ```
+
+2. **Install Flutter dependencies**
+   ```bash
+   flutter pub get
+   ```
+
+3. **Configure API endpoints**
+   ```dart
+   // lib/core/config/api_config.dart
+   class ApiConfig {
+     static const String baseUrl = 'http://localhost:5000/api';
+     static const String socketUrl = 'http://localhost:5000';
+   }
+   ```
+
+4. **Run the Flutter application**
+   ```bash
+   # Debug mode
+   flutter run
+   
+   # Release mode
+   flutter run --release
+   ```
+
+## 📡 API Documentation
+
+### Base URL
+```
+https://river-production.up.railway.app
 ```
 
-### 2. Backend Setup
-```bash
-cd backend
-npm install
-cp .env.example .env  # Configure your environment variables
-npm run dev
-```
+### Authentication Endpoints
 
-### 3. Frontend Setup
-```bash
-cd mobile
-flutter pub get
-flutter pub run build_runner build
-flutter run
-```
+#### Register User
+```http
+POST /api/auth/register
+Content-Type: application/json
 
-### 4. Docker Setup (Alternative)
-```bash
-docker-compose up -d
-```
-
-## ⚙️ Configuration
-
-### Environment Variables
-
-#### Backend (.env)
-```bash
-# Database
-MONGODB_URI=mongodb://localhost:27017/river
-MONGODB_TEST_URI=mongodb://localhost:27017/river_test
-
-# Authentication
-JWT_SECRET=your-super-secret-jwt-key
-JWT_EXPIRES_IN=7d
-REFRESH_TOKEN_SECRET=your-refresh-token-secret
-
-# Email
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASS=your-app-password
-
-# File Upload
-CLOUDINARY_CLOUD_NAME=your-cloud-name
-CLOUDINARY_API_KEY=your-api-key
-CLOUDINARY_API_SECRET=your-api-secret
-
-# Server
-PORT=3000
-NODE_ENV=development
-CLIENT_URL=http://localhost:3000
-```
-
-#### Frontend (lib/core/config/)
-```dart
-// config.dart
-class AppConfig {
-  static const String baseUrl = 'http://localhost:3000/api';
-  static const bool enableLogging = true;
-  static const int timeoutSeconds = 30;
+{
+  "username": "string",
+  "email": "string",
+  "password": "string"
 }
 ```
 
-## 📱 Mobile Features
+#### Login User
+```http
+POST /api/auth/login
+Content-Type: application/json
 
-### Authentication Flow
-- Login/Register with email validation
-- JWT token management with auto-refresh
-- Biometric authentication support
-- Social login (Google, Apple)
-- Password reset via email
+{
+  "email": "string",
+  "password": "string"
+}
+```
 
-### Core Features
-- **Notes Management**: CRUD operations with offline sync
-- **Profile Management**: User profile with image upload
-- **Settings**: Theme, language, notifications
-- **Search**: Real-time search with filters
-- **Offline Support**: Works without internet connection
+#### Get Current User (Protected)
+```http
+GET /api/auth/me
+Authorization: Bearer <jwt_token>
+```
 
-### State Management Architecture
-```dart
-// Example: Notes Feature with Riverpod
+#### Logout (Protected)
+```http
+POST /api/auth/logout
+Authorization: Bearer <jwt_token>
+```
 
-// 1. Repository Provider
-final notesRepositoryProvider = Provider<NotesRepository>((ref) {
-  return NotesRepositoryImpl(ref.watch(dioProvider));
+### Item Management Endpoints
+
+#### Get User Items (Protected)
+```http
+GET /api/item/
+Authorization: Bearer <jwt_token>
+```
+
+#### Get Assigned Items (Protected)
+```http
+GET /api/item/assigned
+Authorization: Bearer <jwt_token>
+```
+
+#### Create New Item (Protected)
+```http
+POST /api/item/
+Content-Type: application/json
+Authorization: Bearer <jwt_token>
+
+{
+  "title": "string",
+  "description": "string",
+  "assignedTo": "user_id" // optional
+}
+```
+
+#### Update Item (Protected)
+```http
+PUT /api/item/:itemID
+Content-Type: application/json
+Authorization: Bearer <jwt_token>
+
+{
+  "title": "string",
+  "description": "string",
+  "status": "string"
+}
+```
+
+#### Reassign Item (Protected)
+```http
+PATCH /api/item/:itemID/reassign
+Content-Type: application/json
+Authorization: Bearer <jwt_token>
+
+{
+  "newReceiverId": "user_id"
+}
+```
+
+### Health Check
+```http
+GET /api/health
+```
+
+Response:
+```json
+{
+  "status": "OK",
+  "timestamp": "2025-01-XX:XX:XX.XXXZ"
+}
+```
+
+## 🔌 Real-time Features (Socket.IO)
+
+The application supports real-time updates for:
+
+- **Item Assignments** - Instant notifications when items are assigned
+- **Status Updates** - Live updates when item statuses change
+- **User Presence** - Online/offline status tracking
+- **Reassignments** - Real-time notifications for item reassignments
+
+### Socket Events
+```javascript
+// Client-side events
+socket.emit('join_room', userId);
+socket.emit('item_updated', itemData);
+
+// Server-side events
+socket.on('item_assigned', (data) => {
+  // Handle new assignment
 });
-
-// 2. State Notifier
-class NotesNotifier extends StateNotifier<NotesState> {
-  final NotesRepository _repository;
-  
-  NotesNotifier(this._repository) : super(const NotesState.loading());
-  
-  Future<void> loadNotes() async {
-    // Implementation
-  }
-}
-
-// 3. Provider
-final notesProvider = StateNotifierProvider<NotesNotifier, NotesState>((ref) {
-  return NotesNotifier(ref.watch(notesRepositoryProvider));
+socket.on('item_status_changed', (data) => {
+  // Handle status update
 });
-
-// 4. UI Usage
-class NotesScreen extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final notesState = ref.watch(notesProvider);
-    
-    return notesState.when(
-      loading: () => const LoadingWidget(),
-      error: (error, stack) => ErrorWidget(error),
-      data: (notes) => NotesListView(notes: notes),
-    );
-  }
-}
 ```
 
-## 🖥️ Backend Features
+## 🏗️ System Design Approach
 
-### API Architecture
-- **RESTful API** design with consistent response format
-- **Authentication middleware** with role-based access
-- **Validation middleware** using Joi schemas
-- **Error handling** with custom error classes
-- **Rate limiting** to prevent abuse
-- **API versioning** for backward compatibility
+### Backend Architecture Principles
+
+1. **Modular Structure**: Routes, controllers, middleware, and utilities are separated into distinct modules
+2. **Authentication Middleware**: JWT-based authentication with cookie support for secure session management
+3. **Error Handling**: Centralized error handling middleware for consistent API responses
+4. **Logging**: Winston-based logging system for production monitoring
+5. **CORS Security**: Configured for specific frontend origins with credential support
+
+### Frontend Architecture (Flutter + Riverpod)
+
+1. **State Management**: Riverpod providers for reactive state management
+2. **HTTP Client**: Dio interceptors for request/response handling and authentication
+3. **Real-time Integration**: Socket.IO client for live updates
+4. **Repository Pattern**: Clean separation between data layer and business logic
 
 ### Database Design
-```typescript
-// User Model
-interface IUser {
-  _id: ObjectId;
-  email: string;
-  password: string;
-  name: string;
-  avatar?: string;
-  role: 'user' | 'admin';
-  isEmailVerified: boolean;
-  refreshTokens: string[];
-  createdAt: Date;
-  updatedAt: Date;
-}
+- **Users Collection**: Authentication and profile information
+- **Items Collection**: Item data with references to users
+- **Indexes**: Optimized queries for user-specific and assignment-based lookups
 
-// Note Model
-interface INote {
-  _id: ObjectId;
-  title: string;
-  content: string;
-  userId: ObjectId;
-  tags: string[];
-  isCompleted: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-```
+## 🚀 Production Deployment
 
-### API Endpoints
-```
-POST   /api/auth/register       # User registration
-POST   /api/auth/login          # User login
-POST   /api/auth/refresh        # Refresh access token
-POST   /api/auth/logout         # User logout
-GET    /api/auth/me             # Get current user
+### Backend Deployment
 
-GET    /api/notes               # Get user notes
-POST   /api/notes               # Create note
-PUT    /api/notes/:id           # Update note
-DELETE /api/notes/:id           # Delete note
+1. **Environment Variables**
+   ```env
+   NODE_ENV=production
+   PORT=5000
+   MONGODB_URI=mongodb+srv://your-cluster
+   JWT_SECRET=your-production-secret
+   FRONTEND_URL=https://your-frontend-domain.com
+   ```
 
-GET    /api/profile             # Get user profile
-PUT    /api/profile             # Update profile
-POST   /api/profile/avatar      # Upload avatar
-```
+2. **Build and Deploy**
+   ```bash
+   npm install --production
+   npm start
+   ```
 
-## 🧪 Testing
+### Frontend Deployment
 
-### Frontend Testing
-```bash
-cd mobile
-flutter test                    # Unit tests
-flutter test integration_test/  # Integration tests
-```
+1. **Build for Production**
+   ```bash
+   flutter build web
+   # or
+   flutter build apk --release
+   flutter build ios --release
+   ```
+
+2. **Update API Configuration**
+   ```dart
+   class ApiConfig {
+     static const String baseUrl = 'https://river-production.up.railway.app/api';
+     static const String socketUrl = 'https://river-production.up.railway.app';
+   }
+   ```
+
+## 🔧 Development Tools
+
+### Backend Dependencies
+- **express**: Web framework
+- **mongoose**: MongoDB ODM
+- **socket.io**: Real-time communication
+- **jsonwebtoken**: JWT authentication
+- **bcryptjs**: Password hashing
+- **cors**: Cross-origin resource sharing
+- **winston**: Logging framework
+
+### Flutter Dependencies
+- **riverpod**: State management
+- **dio**: HTTP client
+- **socket_io_client**: Real-time communication
+- **shared_preferences**: Local storage
+- **flutter_secure_storage**: Secure token storage
+
+## 🔍 Testing
 
 ### Backend Testing
 ```bash
-cd backend
-npm test                        # All tests
-npm run test:unit              # Unit tests
-npm run test:integration       # Integration tests
-npm run test:coverage          # Coverage report
+# Run tests (when implemented)
+npm test
+
+# Run with coverage
+npm run test:coverage
 ```
 
-## 🚀 Deployment
-
-### Backend Deployment (Docker)
+### Flutter Testing
 ```bash
-# Build production image
-docker build -t river-backend .
+# Unit tests
+flutter test
 
-# Run container
-docker run -p 3000:3000 --env-file .env.production river-backend
+# Integration tests
+flutter test integration_test/
 ```
-
-### Frontend Deployment
-```bash
-# Android APK
-flutter build apk --release
-
-# iOS IPA
-flutter build ipa --release
-
-# Web
-flutter build web --release
-```
-
-### CI/CD Pipeline
-The project includes GitHub Actions workflows for:
-- **Automated testing** on pull requests
-- **Code quality checks** (linting, formatting)
-- **Security scanning**
-- **Automated deployment** to staging/production
-- **Release management** with semantic versioning
-
-## 📊 Performance & Monitoring
-
-### Frontend
-- **Firebase Crashlytics**: Crash reporting
-- **Firebase Analytics**: User behavior tracking
-- **Performance monitoring** with custom metrics
-- **Bundle size optimization**
-
-### Backend
-- **Health check endpoints**
-- **Request/response logging**
-- **Performance monitoring**
-- **Database query optimization**
-- **Memory usage tracking**
 
 ## 🤝 Contributing
 
-We love contributions! Please read our [Contributing Guide](CONTRIBUTING.md) to get started.
-
-### Development Workflow
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Add tests for your changes
-5. Ensure tests pass (`npm test` & `flutter test`)
-6. Commit your changes (`git commit -m 'Add amazing feature'`)
-7. Push to the branch (`git push origin feature/amazing-feature`)
-8. Open a Pull Request
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## 📝 License
+## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🌟 Acknowledgments
-
-- Flutter team for the amazing framework
-- Riverpod for excellent state management
-- Express.js community
-- All open source contributors
+This project is licensed under the ISC License - see the [LICENSE](LICENSE) file for details.
 
 ## 🆘 Support
 
-- 📚 [Documentation](docs/)
-- 🐛 [Issue Tracker](https://github.com/yourusername/river/issues)
-- 💬 [Discussions](https://github.com/yourusername/river/discussions)
-- 📧 Email: support@river-app.com
+For support and questions:
+- Create an issue in the GitHub repository
+- Check the API documentation above
+- Review the system architecture section
 
 ---
 
-<div align="center">
-  <p>Built with ❤️ by the River Team</p>
-  <p>
-    <a href="https://github.com/brogrammercode/River">⭐ Star us on GitHub</a> •
-    <a href="https://twitter.com/river_app">🐦 Follow on Twitter</a> •
-    <a href="https://river-production.up.railway.app/api/health">🌐 Visit Website</a>
-  </p>
-</div>
+**River** - Streamlining item management with real-time collaboration 🌊
